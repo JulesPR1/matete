@@ -1,0 +1,77 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+<h1 class='center mt-2'style="margin-bottom:3%;">Votre profil de vendeur</h1>
+<div class="container">
+<div class='row'>
+<div class='col-8'>
+                <h4>Nom d'utilisateur :</h4>
+                <p class='mb-3'>{{user.username}}</p>
+                <h4>Email :</h4>
+                <p class='mb-3'>{{user.email}}</p>
+                <h4>Numéro de tel :</h4>
+                <p class='mb-3'>{{user.numTel}}</p>
+                <a onclick="return confirm('Êtes-vous sûr?')" class="btn btn-outline-danger mb-3" href="{{ path('profil_delete', {'id': app.user.id}) }}">Supprimer le compte</a>
+</div>
+{% if app.user.suspendu == false %}
+    <div class='col'>
+    {% if emplacements|length > 0 %}
+        <h4>Vos emplacements :</h4>
+        {% for emplacement in emplacements %}
+            <h6 class="m-1">-{{emplacement.adresse}} ({{emplacement.codePostal}}) <a class="text-danger" onclick="return confirm('Êtes-vous sûr? Cela supprimera également vos annonces utilisant cet emplacement')" href="{{ path('emplacement_delete', {'id' : emplacement.id}) }}"><i onmouseover="hover(this);" onmouseleave="noHover(this);" class='uil uil-times'></i></a></h6>
+        {% endfor %}
+    {% else %}
+        <h4>Vous n'avez pas d'emplacements</h4>
+    {% endif %}
+
+{{ form_start(form, {attr: {novalidate: 'novalidate'}}) }}
+<label class="mt-3 h6">Ajouter un emplacement:</label><br>
+
+{{ form_widget(form.adresse) }}
+<div class='text-danger form_error'>{{ form_errors(form.adresse) }}</div>
+
+{{ form_widget(form.codePostal) }}
+<div class='text-danger form_error'>{{ form_errors(form.codePostal) }}</div>
+             
+<button type="submit" class="btn btn-outline-success center mt-4">Ajouter l'emplacement</button>
+{{ form_end(form) }}
+</div>
+
+<div class='row mt-5'>
+    <div class="container">
+    {% if annonces|length > 0 %}
+        <h4>Vos annonces :</h4>
+        <div class="row">
+        {% for annonce in annonces|reverse %}
+        <div class="col-md-4 mt-2">
+        <div class="card h-60 mb-1">
+        <div class='card-body'>
+            <h5 class='card-title'><strong>{{annonce.nom}}</strong></h5>
+            <img class='center' src='{{ '/uploads/public/uploads/' ~ annonce.image }}' alt="Image de l'annonce" width='95%' style='border-radius:6px'>
+            <div class="card-body">
+            <a href="{{ path('annonce_show', {'id': annonce.id}) }}" class='btn btn-outline-dark p-2'>Voir plus</a>
+            <a href="{{ path('annonce_edit', {'id': annonce.id}) }}" class='btn btn-outline-info p-2'>Modifier</a>
+            </div>
+        </div>
+        </div>
+        </div>
+        {% endfor %}
+        </div>
+    {% else %}
+        <h4 class='h4 mt-1'>Vous n'avez pas d'annonces en ligne. <a href='{{ path('annonce_new') }}' class='text-primary' style='cursor:pointer'><i class='uil uil-plus-circle'></i></a> </h4>
+    {% endif %}
+    </div>
+</div>
+{% else %}
+    <h1 style="margin-top:5%;"><font color="red"> Votre compte a été bloqué </font></h1>
+{% endif %}
+<script>
+function hover(element){
+    element.className = "uil uil-times-circle"
+}
+
+function noHover(element){
+    element.className = "uil uil-times"
+}
+</script>
+{% endblock %}

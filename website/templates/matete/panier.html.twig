@@ -1,0 +1,38 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+<div class='center'>
+    <h1 class='mt-2'>Votre panier</h1>
+    {% if annonces|length < 1 %}
+        <h4 class='center'>Vous n'avez pas encore d'annonces dans votre panier. Cliquez <a href='{{ path('lesAnnonces') }}' class='text-primary'>ici</a> pour voir les annonces.</h4>
+    {% else %}
+    <a href="/pdf" class="btn btn-outline-info btn-lg mt-2 mb-2"><i class='uil uil-print'></i> Imprimer le panier</a>
+    <div class='container'>
+    <div class='row'>
+    {% for annonce in annonces %}
+        <div class="col-md-4 mt-3 Tout {{annonce.laCategorie.nom}}" id='{{annonce.id}}'>
+         <div class="card mb-3 h-100" id='{{annonce.id}}'>
+            <div class="card-body">
+                <h5 class="card-title"><strong>{{annonce.nom}}</strong></h5>
+                <h6 class="card-subtitle text-muted">de {{annonce.leUser.username}}</h6>
+            </div>
+            <div style='width:95%; height:300px ;margin: 0 auto;'>
+                <img class='center w-100 text-center' src="{{ '/uploads/public/uploads/' ~ annonce.image }}" alt="Image de l'annonce" style='border-radius:6px;height:250px;object-fit: cover;'>
+            </div>
+            <div class="card-body">
+                <p class="card-text">{{annonce.description}}</p>
+                <hr class="mt-2">
+                <a href="{{ path('annonce_show', {'id': annonce.id}) }}" class='btn btn-outline-dark p-2' style='margin-top:3.5%'>Voir plus</a>
+                <a href="{{ path('panier_delete', {'id': annonce.id, 'from': 'panier'}) }}" class='btn btn-outline-warning p-2' style='margin-top:3.5%'>Retirer du panier</a><br>
+            </div>
+             <div class='card-footer'>
+                <small class="text-muted">{{annonce.createdAt|date('d-m-Y')}}</small>
+            </div>
+            </div>
+        </div>
+    {% endfor %}
+    </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

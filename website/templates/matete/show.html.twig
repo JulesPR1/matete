@@ -1,0 +1,78 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+<div class="card center" style='width:20%;margin-top:2%;align-items:center'>
+  <div class="card-body">
+    <h5 class="card-title mt-2"><strong>{{annonce.nom}}</strong></h5>
+    <h6 class="card-subtitle text-muted">{{annonce.leUser.username}}</h6>
+  </div>
+  <img src='{{ '/uploads/public/uploads/' ~ annonce.image }}' alt="Image de l'annonce" width='95%' style='border-radius:6px'>
+  <div class="card-body">
+    <p class="card-text">{{annonce.description}}</p>
+  </div>
+  <ul class="list-group list-group-flush">
+    <li class="list-group-item">Catégorie : {{annonce.laCategorie.nom}}</li>
+    <li class="list-group-item">Quantité : {{annonce.quantite}} kg</li>
+    <li class="list-group-item">Adresse email de {{annonce.leUser.username}} : {{annonce.leUser.email}}</li>
+    <li class="list-group-item">Emplacement : {{annonce.emplacement.adresse}} ({{annonce.emplacement.codePostal}})</li>
+  </ul>
+  <div class="card-body">
+    {% if app.user %}
+    {% if app.user.isAdmin %}
+        {% if inPanier %}
+            <a style='' href="{{ path('panier_delete', {'id': annonce.id, 'from': 'annonce_show'}) }}" class='btn btn-outline-warning mb-3'>Retirer du panier</a><br>
+        {% else %}
+            <a href="{{ path('ajouter_panier', {'id': annonce.id, 'from': 'annonce_show'}) }}" class='btn btn-outline-primary mb-3'><i class='uil uil-shopping-cart'></i> Ajouter au Panier</a><br>
+        {% endif %}
+        <a href="{{ path('annonce_edit', {'id': annonce.id}) }}" class='btn btn-outline-info mb-3'>Modifier</a><br>
+        <a href="{{ path('annonce_delete', {'id': annonce.id}) }}"  onclick="return confirm('Êtes-vous sûr?')" class='btn btn-outline-danger'>Supprimer</a><br>
+    {% else %}
+            {% if annonce in app.user.lesAnnonces %}
+                <a href="{{ path('annonce_edit', {'id': annonce.id}) }}" class='btn btn-outline-info mb-3'>Modifier</a><br>
+                <a href="{{ path('annonce_delete', {'id': annonce.id}) }}" onclick="return confirm('Êtes-vous sûr?')" class='btn btn-outline-danger'>Supprimer</a><br>
+            {% else %}
+                {% if inPanier %}
+                    <a href="{{ path('panier_delete', {'id': annonce.id, 'from': 'annonce_show'}) }}" class='btn btn-outline-warning mb-3'>Retirer du panier</a><br>
+                {% else %}
+                    <a href="{{ path('ajouter_panier', {'id': annonce.id, 'from': 'annonce_show'}) }}" class='btn btn-outline-primary mb-3'><i class='uil uil-shopping-cart'></i>Ajouter au Panier</a><br>
+                {% endif %}
+            {% endif %}
+    {% endif %}
+{% else %}
+{% if inPanier %}
+    <a href="{{ path('panier_delete', {'id': annonce.id, 'from': 'annonce_show'}) }}" class='btn btn-outline-warning mb-3'>Retirer du panier</a><br>
+{% else %}
+    <a href="{{ path('ajouter_panier', {'id': annonce.id, 'from': 'annonce_show'}) }}" class='btn btn-outline-primary mb-3'><i class='uil uil-shopping-cart'></i> Ajouter au Panier</a><br>
+{% endif %}
+{% endif %}
+  </div>
+</div>
+</div>
+<script>
+function changeCategorie(selectedOption){
+    var value = selectedOption.value;
+    
+    //récupère toutes les cards
+    var allCards = document.getElementsByClassName("Tout");
+    //on fait d'abord disparaitre toutes les cards sans exception
+    for(var i = 0; i < allCards.length; i++){
+        allCards[i].style.display = "none";
+    }
+
+    //récupère les cards ayant pour categorie la categorie selectionnée avec le select
+    var relatedCards = document.getElementsByClassName(value);
+    //re-affiche les annonces ayant la categorie choisie dans le select
+    for(var i = 0; i < relatedCards.length; i++){
+        relatedCards[i].style.display = "block";
+    }
+}
+
+function hover(element){
+    element.className = "uil uil-times-circle"
+}
+
+function noHover(element){
+    element.className = "uil uil-times"
+}
+</script>
+{% endblock %}

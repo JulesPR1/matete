@@ -1,0 +1,279 @@
+{% extends 'base.html.twig' %}
+{% block body %}
+<!DOCTYPE html>
+<html>
+  <head>
+  <script>
+    markers = [];
+    var userMarker = null;
+
+    function initMap() {
+
+    const perpignan = { lat: 42.689658, lng: 3.033439 };
+    const map = new google.maps.Map(document.getElementById("map"), {
+        zoom: 10,
+        center: perpignan,
+        disableDefaultUI: true,
+        zoomControl: true
+    });
+
+    var infowindow = new google.maps.InfoWindow();
+    var markerAnnonce, i;
+
+    var n = 0;
+    var xhr = []
+
+    {% for annonce in annonces %}
+      adresse = '{{ annonce.emplacement.adresse }}';
+      codePostal = '{{ annonce.emplacement.codePostal }}';
+      adresse = adresse.replace(/ /g, "+");
+
+      //construit l'url qui servira a récupérer les latitudes longitudes des adresses des annonces
+      var requestUrl = "https://api-adresse.data.gouv.fr/search/?q=" + adresse + "&postcode=" + codePostal
+      
+      //fait la requête à l'API gouv, il faut une instantation de XMLHttpRequest par requête d'ou l'index [n]
+      xhr[n] = new XMLHttpRequest();
+      xhr[n].open('GET', requestUrl);
+      xhr[n].responseType = 'json';
+      xhr[n].send();
+
+      xhr[n].onload = function() {
+        var results = this.response;
+        var lat = results.features[0].geometry.coordinates[1];
+        var lng = results.features[0].geometry.coordinates[0];
+        var city = results.features[0].properties.city;
+        var id = '{{ annonce.id }}'
+        var nom = '{{ annonce.nom }}'
+        var img = '{{ annonce.image }}'
+
+        //stock la data nécessaire pour le marker de l'annonce dans cet array
+        var annonceMarkerDATA = [id, nom, lat, lng, img]
+
+        //définit la position du marker avec lat et lng récupérés précédemment        
+        var pos = {
+        lat: annonceMarkerDATA[2],
+        lng: annonceMarkerDATA[3],
+        }
+        //pose le point
+        markerAnnonce = new google.maps.Marker({
+          title: '{{ annonce.nom }}',
+          position: pos,
+          map: map,
+          icon: 'http://maps.google.com/mapfiles/ms/icons/green-dot.png',
+          categorie: '{{ annonce.lacategorie.nom }}',
+          city: city,
+        });
+
+        google.maps.event.addListener(markerAnnonce, 'click', (function(markerAnnonce, i) {
+          return function() {
+            infowindow.setContent("<a class='h3 text-dark simple-link center' href='/annonce/" + annonceMarkerDATA[0] + "'>" + annonceMarkerDATA[1] + "<br><img src='" + '/uploads/public/uploads/' + annonceMarkerDATA[4] + "' alt='Image de l'annonce' style='border-radius:5px' width='300px''></a>");
+            infowindow.open(map, markerAnnonce);
+          }
+        })(markerAnnonce, i));
+          n = n + 1;
+          markers.push(markerAnnonce);
+        }
+    {% endfor %}
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const pos = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        };
+        
+        var markerUser = map.setCenter(pos);
+        var leMarkerUser = new google.maps.Marker({
+          position: pos,
+          map : map,
+          title: 'Vous êtes ici'
+        });
+        userMarker = leMarkerUser;
+      },
+      () => {
+        handleLocationError(true, infowindow, map.getCenter());
+      }
+    );
+    } else {
+      // Browser doesn't support Geolocation
+      handleLocationError(false, infowindow, map.getCenter());
+    }
+}
+  </script>
+  </head>
+  <body>
+  <div class="container-fluid p-0 m-0">
+    <div class='row'>
+      <div class='col-md-9'>
+        <div id="map"></div>
+      </div>
+      <div class='col-md-3 mt-4' style='overflow-y: scroll; height: 90vh !important; position:asbolute; right:1%;'>
+        {% for annonce in annonces %}
+          <div class='card card-annonce mb-3 Tous' data-attr='{{ annonce.nom }} {{ annonce.lacategorie.nom }} {{ annonce.emplacement.adresse }}'>
+            <div class='card-body'>
+              <h5 class='card-title {{ annonce.lacategorie.nom }}'>{{ annonce.nom }}</h5>
+              <p class='card-text'>{{ annonce.description }}</p>
+              <a href='/annonce/{{ annonce.id }}' class='btn btn-primary'>Voir l'annonce</a>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+    <div>
+    <div class="card border-primary mb-3" style="max-width: 2rem;z-index:2;position:absolute;top:9.2%;left:0.40%;max-height:2rem;cursor:pointer;" id='search' onclick='show_search_panel()'>
+      <div class="card-body">
+        <p class='card-text' style='position:absolute;top:3.5%;right:20%'><strong><i class='uil uil-search'></i></strong></p>
+      </div>
+    </div>
+
+    <div class="card border-primary mb-3" style="max-width:22rem;z-index:1;position:absolute;top:9.2%;left:0.40%;display:none;" id='card'>
+    <div class="card-body">
+    <div style='position:absolute;right:0%;top:0%;cursor:pointer'><i class='uil uil-times' onclick='dismiss_search_panel();'></i></div>
+      <input type='text' class='form-control' placeholder='Rechercher...' style='width:100%' oninput='recherche(this)'>
+      <select class='form-control mt-2' onchange='filter_categorie(this);'>
+      <option>Toutes catégories</option>
+      {% for categorie in categories %}
+        <option>{{categorie.nom}}</option>
+      {% endfor %}
+      </select>
+      <select class='form-control mt-2' onchange='distance_filter(this);'>
+      <option>Pas de limite</option>
+      <option>2km</option>
+      <option>5km</option>
+      <option>10km</option>
+      <option>20km</option>
+      <option>30km</option>
+      <option>50km</option>
+      <option>100km</option>
+      </select>
+    </div>
+    </div>
+    <script
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD5hijwTxtQCINhGfTZ4HJhMutqHk86COs&callback=initMap&libraries=geometry&v=3"
+    ></script>
+    <script>
+    function dismiss_search_panel(){
+      document.getElementById('card').style.display='none';
+      document.getElementById('search').style.display='block';
+    }
+
+    function show_search_panel(){
+      document.getElementById('card').style.display='block';
+      document.getElementById('search').style.display='none';
+    }
+
+    //filtre les markers d'annonce en fonction de leur distance avec le userMarker
+    function distance_filter(selectedOption) {
+      markersVisibles = [];
+      value = selectedOption.value;
+
+      annonce_cards = document.getElementsByClassName('Tous');
+      for (var i = 0; i < annonce_cards.length; i++) {
+        annonce_cards[i].style.display = 'none';
+      }
+
+      //affiche tous les markers, sinon affiche que ceux en fonction de la limite choisie
+      if(value == "Pas de limite"){
+        show(markers);
+        for (var i = 0; i < annonce_cards.length; i++) {
+          annonce_cards[i].style.display = 'block';
+        }
+      }
+      else{
+        value = parseInt(value.replace( /^\D+/g, ''));
+        value = value * 1000;
+        
+        for (var i = 0; i < markers.length; i++) {
+          var distance = google.maps.geometry.spherical.computeDistanceBetween(
+            markers[i].getPosition(),
+            userMarker.getPosition()
+          );
+
+          if (distance < value){
+            markersVisibles.push(markers[i]);
+            for (var n = 0; n < annonce_cards.length; n++) {
+              if(annonce_cards[n].dataset.attr.includes(markers[i].title + ' ' + markers[i].categorie)){
+                annonce_cards[n].style.display = 'block';
+              }
+            }
+          }
+        }
+        show(markersVisibles);
+      }
+    }
+
+    //filtre en fonction de la categorie choisie
+    function filter_categorie(selectedOption){
+      markersVisibles = []
+      value = selectedOption.value;
+
+      var ToutesLesAnnonces = document.getElementsByClassName('Tous');
+      
+      for(var i = 0; i < ToutesLesAnnonces.length; i++){
+        ToutesLesAnnonces[i].style.display = 'none';
+      }
+
+      if(value == 'Toutes catégories'){
+        for(var i = 0; i < ToutesLesAnnonces.length; i++){
+          ToutesLesAnnonces[i].style.display = 'block';
+        }
+        show(markers);
+      }else{
+        for(var i = 0; i < markers.length; i++){
+          if(markers[i]['categorie'] == value) {
+            markersVisibles.push(markers[i])
+          }
+        }
+        for(var i = 0; i < ToutesLesAnnonces.length; i++){
+          if(ToutesLesAnnonces[i].dataset.attr.includes(value)){
+            ToutesLesAnnonces[i].style.display = 'block';
+          }
+        }
+        show(markersVisibles)
+      }
+
+      for(var i = 0; i < annoncesVisibles.length; i++){
+        annoncesVisibles[i].style.display = 'block';
+      }
+    }
+
+    //barre de recherche
+    function recherche(input){
+      input = input.value
+      for (var i = 0; i < markers.length; i++){
+        if(markers[i]['title'].toLowerCase().includes(input.toLowerCase()) 
+          || markers[i]['categorie'].toLowerCase().includes(input.toLowerCase())){
+          //|| markers[i]['city'].toLowerCase().includes(input.toLowerCase())
+          //|| markers[i]['city'].toLowerCase().replace(/[^A-Z0-9]+/ig, " ").includes(input.toLowerCase())) {
+          markers[i].setVisible(true)
+        }else{
+          markers[i].setVisible(false)
+        }
+      }
+
+      cards = document.getElementsByClassName('Tous')
+      for (var i = 0; i < cards.length; i++) {
+      console.log(cards[i].className)
+        if(cards[i].dataset.attr.toLowerCase().includes(input.toLowerCase()))
+        {
+          cards[i].style.display = 'block';
+        }else{
+          cards[i].style.display = 'none';
+        }
+      }
+    }
+    //cache tous les markers et fait apparaitre seulement ceux passés en paramètre
+    function show(markersVisibles){
+      for (var i = 0; i < markers.length; i++){
+        markers[i].setVisible(false)
+      }
+      for (var i = 0; i < markersVisibles.length; i++){
+        markersVisibles[i].setVisible(true)
+      }
+    }
+    </script>
+  </body>
+</html>
+{% endblock %}

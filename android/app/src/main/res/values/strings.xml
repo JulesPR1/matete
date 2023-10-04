@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">MATETE</string>
+    <string name="title_activity_maps">Map</string>
+    <string-array name="localisation">
+        <item>Tout</item>
+        <item>moins de 2km</item>
+        <item>moins de 5km</item>
+        <item>moins de 10km</item>
+        <item>moins de 20km</item>
+        <item>moins de 30km</item>
+    </string-array>
+</resources>

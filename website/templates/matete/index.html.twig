@@ -1,0 +1,123 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+<h1 class='center mt-2'>Les Annonces</h1>
+<select class='form-control mb-3' style="width:10%;position:relative;left:45%" onchange="changeCategorie(this)">
+<option value='Tout'>Toutes catégories</option>
+{% for categorie in categories %}
+<option value='{{categorie.nom}}'>{{categorie.nom}}</option>
+{% endfor %}
+</select>
+<div class='d-flex justify-content-center'>
+    <input id='recherche' value='{{ recherche }}' type='text' class='form-control w-25 mb-3 mx-2' placeholder='Rechercher'>
+    <button class='btn btn-primary h-25' onclick="recherche();">Rechercher</button>
+</div>
+{% if annonces|length < 1 %}
+    <h4 class='center mt-2'>Il n'y a pas d'annonces pour le moment.</h4>
+{% else %}
+    <div class="container">
+    <div class="row">
+    {% for annonce in annonces %}
+        <div class="col-md-4 mt-3 Tout {{annonce.laCategorie.nom}}" id='{{annonce.id}}'>
+        <div class="card mb-3 h-100" id='{{annonce.id}}'>
+            <div class="card-body">
+                <h5 class="card-title"><strong>{{annonce.nom}}</strong></h5>
+                <h6 class="card-subtitle text-muted">de {{annonce.leUser.username}}</h6>
+                {% if app.user and annonce in app.user.lesAnnonces %}
+                    <h5 class='badge bg-info' style='position:absolute; color:white; left:5.5%; top:13%'>Votre annonce</h5>
+                {% elseif annonce.id in panier|keys %}
+                    <!--badge panier-->
+                    <h5 class='badge bg-success' style='position:absolute; color:white; left:5.5%; top:13%'><a class='simple-link' href="{{ path('panier_delete', {'id': annonce.id, 'from': 'lesAnnonces'}) }}"><i class='uil uil-times times' style='font-size:13px' onmouseover="hover(this);" onmouseleave="noHover(this);"></i></a> <a href='/panier' class='simple-link'>Dans votre panier</a></h5>
+                {% endif %}
+            </div>
+            <div style='width:95%; height:250px ;margin: 0 auto;'>
+                <img class='center w-100 text-center' src="{{ '/uploads/public/uploads/' ~ annonce.image }}" alt="Image de l'annonce" style='border-radius:6px;height:250px;object-fit: cover;'>
+            </div>
+            <div class="card-body">
+                <p class="card-text">{{annonce.description}}</p>
+                <hr class="mt-2">
+                <a href="{{ path('annonce_show', {'id': annonce.id}) }}" class='btn btn-outline-dark p-2' style='margin-top:3.5%'>Voir plus</a>
+                {% if app.user %}
+                    {% if annonce.id not in panier|keys and annonce not in app.user.lesAnnonces %}
+                        <a href="{{ path('ajouter_panier', {'id': annonce.id, 'from': 'lesAnnonces'}) }}" class='btn btn-outline-success' style='margin-top:3.5%'><i class='uil uil-shopping-cart'></i>Ajouter au panier</a>
+                    {% endif %}
+                    {% if annonce in app.user.lesAnnonces %}
+                        <a href="{{ path('annonce_edit', {'id': annonce.id}) }}" class='btn btn-outline-info p-2' style='margin-top:3.5%'>Modifier</a>
+                    {% endif %}
+                {% else %}
+                    {% if annonce.id not in panier|keys %}
+                        <a href="{{ path('ajouter_panier', {'id': annonce.id, 'from': 'lesAnnonces'}) }}" class='btn btn-outline-success' style='margin-top:3.5%'><i class='uil uil-shopping-cart'></i>Ajouter au panier</a>
+                    {% endif %}
+                {% endif %}
+            </div>
+             <div class='card-footer'>
+                <small class="text-muted">{{annonce.createdAt|date('d-m-Y')}}</small>
+            </div>
+            </div>
+        </div>
+    {% endfor %}
+    </div>
+    </div>
+{% endif %}
+
+{% if annonces|length > 0 %}
+<div class='d-flex mt-5 mb-5' style='margin: 0px auto;text-align:center; justify-content: center;'>
+
+{% if (page - 1) > 0 %}
+    <a class='btn btn-outline-dark rounded-0 mx-1' href="/lesAnnonces?page={{ page - 1 }}&recherche={{ recherche }}"><i class='uil uil-arrow-left'></i>Précédent</a>
+{% else %}
+    <a class='btn btn-outline-dark rounded-0 mx-1 disabled'><i class='uil uil-arrow-left'></i>Précédent</a>
+{% endif %}
+
+{% if nb_pages > 2 %}
+{% for i in 0..(nb_pages - 1) %}
+        {% if page - 1 == i %}
+            <a class='btn btn-outline-dark rounded-0 mx-1 active' href="/lesAnnonces?page={{i + 1}}&recherche={{ recherche }}">{{ i + 1 }}</a>
+        {% else %}
+            <a class='btn btn-outline-dark rounded-0 mx-1' href="/lesAnnonces?page={{i + 1}}&recherche={{ recherche }}">{{ i + 1 }}</a>
+        {% endif %}
+ {% endfor %}
+{% endif %}
+
+ {% if (page + 1) < nb_pages %}
+    <a class='btn btn-outline-dark rounded-0 mx-1' href='/lesAnnonces?page={{ page + 1 }}&recherche={{ recherche }}'><i class='uil uil-arrow-right'></i>Suivant</a>
+{% else %}
+    <a class='btn btn-outline-dark rounded-0 mx-1 disabled'><i class='uil uil-arrow-right'></i>Suivant</a>
+{% endif %}
+</div>
+{% endif %}
+
+<script>
+function changeCategorie(selectedOption){
+    var value = selectedOption.value;
+    
+    //récupère toutes les cards
+    var allCards = document.getElementsByClassName("Tout");
+    //on fait d'abord disparaitre toutes les cards sans exception
+    for(var i = 0; i < allCards.length; i++){
+        allCards[i].style.display = "none";
+    }
+
+    //récupère les cards ayant pour categorie la categorie selectionnée avec le select
+    var relatedCards = document.getElementsByClassName(value);
+    //re-affiche les annonces ayant la categorie choisie dans le select
+    for(var i = 0; i < relatedCards.length; i++){
+        relatedCards[i].style.display = "block";
+    }
+}
+
+function hover(element){
+    element.className = "uil uil-times-circle"
+}
+
+function noHover(element){
+    element.className = "uil uil-times"
+}
+
+function recherche(){
+    var recherche = document.getElementById("recherche").value;
+    var url = "/lesAnnonces?recherche=" + recherche;
+    window.location.href = url;
+}
+</script>
+{% endblock %}

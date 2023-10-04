@@ -1,0 +1,48 @@
+version: '3.8'
+services:
+  db:
+   build:
+    context: ./docker/database
+   container_name: julesmatetesymfony_db
+   environment:
+    MYSQL_ROOT_PASSWORD: btssio
+    MYSQL_DATABASE: matete
+    MYSQL_USER: user
+    MYSQL_PASSWORD: btssio
+   restart: always
+   ports:
+      - 3350:3350
+# volumes:
+# - ./docker/database/matete.sql:/docker-entrypoint-initdb.d/init.sql
+# - ./database/data:/var/lib/mysql #plus de bdd persistente
+   networks:
+    - symfony
+  web:
+   build:
+    context: ./docker/apache
+   container_name: julesmatetesymfony_symfony
+   depends_on:
+    - db
+   volumes:
+    - .:/var/www/html/matete/
+   ports:
+      - 8020:8000
+   networks:
+    - symfony
+  phpmyadmin:
+   depends_on:
+     - db
+   image: phpmyadmin/phpmyadmin
+   container_name: julesmatetesymfony_phpmyadmin
+   links:
+    - db
+   restart: always
+   ports:
+      - 8095:80
+   environment:
+    PMA_HOST: julesmatetesymfony_db
+    MYSQL_ROOT_PASSWORD: password
+   networks:
+    - symfony
+networks:
+  symfony:

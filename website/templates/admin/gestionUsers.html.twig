@@ -1,0 +1,87 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+<h1 class='mt-2 center'>Liste des utilistateurs</h1>
+<div class='center mb-3'>
+<input type="radio" id="Tous" name="drone" value="Tous" onclick="onClick(this);" checked>
+<label for="Tous">Tous</label>
+<input class='ml-3' type="radio" id="Admins" name="drone" onclick="onClick(this);" value="Admins">
+<label for="Admins">Admins</label>
+<input class='ml-3' type="radio" id="Suspendus" name="drone" onclick="onClick(this);" value="Suspendus">
+<label for="Suspendus">Suspendus</label>
+</div>
+
+<div class='container'>
+<div class='row'>
+{% for user in users|reverse %}
+    {% if user.roles[0] == "ROLE_ADMIN" %}
+        <div class='col-md-3 mb-4 Tous Admins'>
+        <div class="card border-info h-100" style="max-width: 20rem;">
+        <div class="card-header">Utilisateur n°{{ user.id }}</div>
+        <div class="card-body">
+            <h4 class="card-title">{{ user.username }}</h4>
+            <hr>
+            <p class="card-text"> {{ user.email }} </p>
+            <hr>
+            <p class='card-text'> {{ user.numTel }}</p>
+            <hr>
+            <a onclick="return confirm('Êtes-vous sûr?')" class="btn btn-outline-danger" href="{{ path('user_delete', {'id': user.id}) }}">Supprimer</a>
+        </div>
+        </div>
+        </div>
+    {% else %}
+        {% if user.suspendu %}
+        <div class='col-md-3 mb-4 Tous Suspendus'>
+        <div class="card border-warning" style="max-width: 20rem;">
+        <div class="card-header">Utilisateur n°{{ user.id }}</div>
+        <div class="card-body">
+            <h4 class="card-title">{{ user.username }}</h4>
+            <hr>
+            <p class="card-text"> {{ user.email }} </p>
+            <hr>
+            <p class='card-text'> {{ user.numTel }}</p>
+            <hr>
+            <a class="btn btn-outline-warning" href="{{ path('user_suspend', {'id': user.id}) }}">Réactiver</a>
+            <a onclick="return confirm('Êtes-vous sûr?')" class="btn btn-outline-danger mt-2" href="{{ path('user_delete', {'id': user.id}) }}">Supprimer</a>
+        </div>
+        </div>
+        </div>
+        {% else %}
+        <div class='col-md-3 mb-4 Tous'>
+        <div class="card bg-light" style="max-width: 20rem;">
+        <div class="card-header">Utilisateur n°{{ user.id }}</div>
+        <div class="card-body">
+            <h4 class="card-title">{{ user.username }}</h4>
+            <hr>
+            <p class="card-text"> {{ user.email }} </p>
+            <hr>
+            <p class='card-text'> {{ user.numTel }}</p>
+            <hr>
+            <a class="btn btn-outline-warning" href="{{ path('user_suspend', {'id': user.id}) }}">Suspendre</a>
+            <a onclick="return confirm('Êtes-vous sûr?')" class="btn btn-outline-danger mt-2" href="{{ path('user_delete', {'id': user.id}) }}">Supprimer</a>
+        </div>
+        </div>
+        </div>
+        {% endif %}
+    {% endif %}
+{% endfor %}
+</div>
+</div>
+
+<script>
+function onClick(myRadio) {
+    //masquer ceux qui ont la classe tous
+    var tous = document.getElementsByClassName("Tous");
+    for (var i = 0; i < tous.length; i++) {
+    tous[i].style.display="none";
+    }
+
+    //afficher ceux qui ont la classe en param
+    var items = document.getElementsByClassName(myRadio.value);
+    for (var i = 0; i < items.length; i++) {
+    items[i].style.display="block";
+    }
+}
+</script>
+
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    {% if app.user.suspendu == false and app.user.enabled == true%}
+        {% if emplacementEmpty == false %}
+            {{ form_start(form, {attr: {novalidate: 'novalidate'}}) }}
+                <div class='center card' style='width:20%;margin-top:2%;align-items:center'>
+                    <div class='card-body'>
+                    <h1 class='h3 card-title'>Créer une annonce</h1>
+
+                    {{ form_widget(form.nom) }}
+                    <div class='text-danger form_error'>{{ form_errors(form.nom) }}</div>
+                    
+                    {{ form_widget(form.description) }}
+                    <div class='text-danger form_error'>{{ form_errors(form.description) }}</div>
+
+                    {{ form_widget(form.image) }}
+                    <div class='text-danger form_error'>{{ form_errors(form.image) }}</div>
+
+                    {{ form_widget(form.quantite, { 'type':'number' }) }}
+                    <div class='text-danger form_error'>{{ form_errors(form.quantite) }}</div>
+
+                    {{ form_widget(form.laCategorie) }}
+                    <div class='text-danger form_error'>{{ form_errors(form.laCategorie) }}</div>
+
+                    {{ form_widget(form.emplacement) }}
+                    <div class='text-danger form_error'>{{ form_errors(form.emplacement) }}</div>
+                    <button type="submit" class="btn btn-outline-success btn-lg center mt-4 mb-3">Poster l'annonce</button>
+                </div>
+                </div>
+            {{ form_end(form) }}
+        {% else %}
+            <h1 class='h3 center mt-2 mx-2'>Veuillez d'abord ajouter des emplacements à votre profil en cliquant <a href='/showProfil'>ici<a>.</h1>
+        {% endif %}
+    {% else %}
+    <h3 class='mt-1 mx-2 text-danger'>Vous ne pouvez pas créer d'annonces</h3>
+    {% endif %}
+
+<script>
+//évite de pouvoir entrer d'autres caractères non numériques
+document.querySelector(".quantite").addEventListener("keypress", function (evt) {
+    if (evt.which != 8 && evt.which != 0 && evt.which < 48 || evt.which > 57)
+    {
+        evt.preventDefault();
+    }
+});
+</script>
+
+{% endblock %}

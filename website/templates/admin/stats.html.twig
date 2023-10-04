@@ -1,0 +1,67 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<div class='d-flex'>
+<div style='margin-left:3%!important;margin-top:3%!important;width:30%!important; height:30%!important'>
+  <canvas id="categorieDonut"></canvas>
+</div>
+<div style='margin-left:10%!important;margin-top:5%!important;width:50%!important; height:50%!important'>
+  <canvas id="categorieBar"></canvas>
+</div>
+</div>
+<script>
+const labels = JSON.parse('{{ categorieLabels|json_encode|raw }}')
+
+  const data = {
+    labels: labels,
+    datasets: [{
+      label: 'Categories',
+      backgroundColor: JSON.parse('{{ categorieColors|json_encode|raw }}'),
+    hoverOffset: 4,
+    data: JSON.parse('{{ categorieDatas|json_encode|raw }}'),
+    }]
+  };
+
+  const config = {
+    type: 'doughnut',
+    data: data,
+  };
+
+  const donut = new Chart(
+    document.getElementById('categorieDonut'),
+    config
+  );
+
+//bar
+const labels_bar = JSON.parse('{{ categorieLabels|json_encode|raw }}');
+
+const data_bar = {
+  labels: labels,
+  datasets: [{
+    label: 'Annonces',
+    data: JSON.parse('{{ categorieDatas|json_encode|raw }}'),
+    backgroundColor: JSON.parse('{{ categorieColors|json_encode|raw }}')
+  }]
+};
+
+const config_bar = {
+    type: 'bar',
+    data: data_bar,
+    options: {
+    scales: {
+        y: {
+            beginAtZero: true
+        }
+    }
+    },
+};
+
+const bar = new Chart(
+    document.getElementById('categorieBar'),
+    config_bar
+  );
+</script>
+
+{% endblock %}

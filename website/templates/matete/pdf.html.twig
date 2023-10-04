@@ -1,0 +1,18 @@
+{% block body %}
+<center>
+    <h1><ins>Votre panier</ins></h1><br>
+    {% for annonce in annonces %}
+        <h3>Nom de l'Annonce :
+            {{annonce.nom}}</h3>
+        <h5>Description :
+            {{annonce.description}}</h5>
+        <h5> Contenu de l'annonce : {{annonce.quantite}} {{annonce.laCategorie}}s</h5>
+        <h5>Emplacement :
+            {{annonce.emplacement}}</h5>
+        <h5>Contactez {{annonce.leUser}} :
+            <br>numéro : {{annonce.leUser.numTel}}
+            <br>email : {{annonce.leUser.email}}</h5>
+        <hr>
+    {% endfor %}
+<center>
+{% endblock %}

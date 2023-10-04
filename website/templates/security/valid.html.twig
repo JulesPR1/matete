@@ -1,0 +1,17 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+{% if success %}
+    <h3 class='text-success center'>Vous avez validé votre compte! Vous serez redirigé dans quelques secondes.</h3>
+{% else %}
+    <h3 class='text-danger center'>Erreur lors de la validation du compte. Vous serez redirigé dans quelques secondes.</h3>
+{% endif %}
+
+<script>
+//redirect after 5 seconds
+setTimeout(function(){
+    window.location.href = '/lesAnnonces';
+}, 8000);
+</script>
+
+{% endblock %}

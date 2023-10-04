@@ -1,0 +1,38 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+<div class="center">
+<h1 class='mt-2'>Gestion des catégories</h1>
+<div class='container'>
+<div class='row'>
+    <div class='col mt-3'>
+    <h3>Ajouter une catégorie :</h3>
+    {{ form_start(form, {attr: {novalidate: 'novalidate'}}) }}
+    {{ form_widget(form.nom) }}
+    {{ form_widget(form.color) }}
+    <div class='text-danger'>{{ form_errors(form.nom) }}</div>
+    <button type="submit" class="btn btn-outline-success center mt-2">Ajouter une catégorie</button>
+    {{ form_end(form) }}
+    </div>
+    
+    <div class='col mt-3'>
+    <h3>Liste des catégories: </h3>
+    <div style='margin-left:24%'>
+    {% for categorie in categories|reverse %}
+        <h5 style='text-align:left;'>- {{categorie.nom}} <a onclick="return confirm('Êtes-vous sûr? Cela risque de supprimer de nombreuses annonces')" href="{{ path('categorie_delete', {'id': categorie.id}) }}" class='text-danger'><i onmouseover="hover(this);" onmouseleave="noHover(this);" class='uil uil-times'></i></a></h5>
+    {% endfor %}
+    </div>
+    </div>
+</div>
+</div>
+</div>
+<script>
+function hover(element){
+    element.className = "uil uil-times-circle"
+}
+
+function noHover(element){
+    element.className = "uil uil-times"
+}
+</script>
+{% endblock %}
