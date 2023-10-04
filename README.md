@@ -17,5 +17,4 @@
 ### <ins>Documentation des éléments du projet:</ins>
 
 >- La documentation du site web est disponible  **[ici](/website)**.
->- Lien vers la prod **[ici](http://lycee-gen-technologique.pro.dns-orange.fr:8020/)**.
 >- La documentation de l'application mobile est disponible  **[ici](/android)**.
